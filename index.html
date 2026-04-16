@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중간고사 대비 주관식 마스터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Fira+Code:wght@400;500&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f1f5f9; }
+        .code-block { font-family: 'Fira Code', monospace; background: #1e293b; color: #f8fafc; padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 1.5rem; white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6; }
+        .hidden { display: none; }
+        .card { max-width: 800px; margin: 2rem auto; background: white; border-radius: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; }
+        .category-btn { transition: all 0.3s; border: 2px solid transparent; }
+        .category-btn:hover { transform: translateY(-3px); border-color: #3b82f6; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- 과목 선택 화면 -->
+    <div id="setup-screen" class="card p-12 text-center">
+        <h1 class="text-4xl font-extrabold text-slate-800 mb-6">중간고사 주관식 정복</h1>
+        <p class="text-slate-500 mb-10">공부할 과목을 선택하세요. 자바는 4장 'this' 범위까지로 조정되었습니다.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <button onclick="startQuiz('JAVA')" class="category-btn p-8 bg-blue-50 rounded-2xl text-left">
+                <div class="text-blue-600 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">자바(JAVA)</h3>
+                <p class="text-slate-500 text-sm">2~3장 전체 및 4장 객체지향 기초(~this 키워드)</p>
+            </button>
+
+            <button onclick="startQuiz('DB')" class="category-btn p-8 bg-indigo-50 rounded-2xl text-left">
+                <div class="text-indigo-600 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">데이터베이스(DB)</h3>
+                <p class="text-slate-500 text-sm">3장~6장: 시스템, 모델링, 관계 데이터 모델 및 연산</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- 퀴즈 실행 화면 -->
+    <div id="quiz-screen" class="card hidden">
+        <div id="quiz-header" class="p-6 bg-slate-800 text-white flex justify-between items-center">
+            <div>
+                <span id="subject-tag" class="px-3 py-1 bg-blue-500 rounded-full text-xs font-bold mr-2">JAVA</span>
+                <span id="progress-text" class="text-sm font-medium">1 / 10</span>
+            </div>
+            <button onclick="exitQuiz()" class="text-slate-400 hover:text-white transition">그만두기</button>
+        </div>
+        
+        <div class="p-8">
+            <div id="question-box">
+                <p id="q-text" class="text-xl font-bold text-slate-800 mb-6 leading-relaxed"></p>
+                <div id="code-area" class="code-block hidden"></div>
+            </div>
+
+            <div class="space-y-4">
+                <label class="block text-sm font-bold text-slate-400 uppercase">정답 입력</label>
+                <input type="text" id="ans-input" placeholder="답안을 입력하세요" 
+                       class="w-full p-4 text-lg border-2 border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all">
+                <p class="text-xs text-slate-400">* 정확한 용어 또는 결과값을 입력하세요.</p>
+            </div>
+
+            <div class="mt-10 flex justify-between items-center border-t pt-6">
+                <p id="hint-text" class="text-sm text-slate-400 italic"></p>
+                <button onclick="checkAnswer()" id="submit-btn" class="bg-blue-600 text-white px-10 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">정답 확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 결과 분석 화면 -->
+    <div id="result-screen" class="card hidden">
+        <div class="p-10 text-center bg-slate-50 border-b">
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">학습 종료!</h2>
+            <p class="text-slate-500">학습 범위를 잘 소화하셨나요?</p>
+            <div class="mt-6">
+                <span id="score-display" class="text-6xl font-black text-blue-600">0</span>
+                <span class="text-2xl text-slate-400 font-bold">/ 10</span>
+            </div>
+        </div>
+        <div id="review-list" class="p-6 space-y-4 max-h-[400px] overflow-y-auto"></div>
+        <div class="p-8 flex gap-4">
+            <button onclick="location.reload()" class="flex-1 py-4 bg-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-300">메뉴로</button>
+            <button onclick="startQuiz(currentSubject)" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg">다시 풀기</button>
+        </div>
+    </div>
+
+    <script>
+        const dbQuestions = [
+            { q: "데이터베이스의 전체적인 구조와 제약조건을 정의한 것을 무엇이라 하는가? (3장)", a: "스키마", h: "S로 시작하는 용어" },
+            { q: "E-R 모델에서 다중 값 속성을 나타낼 때 사용하는 기호는? (4장)", a: "이중 타원", h: "테두리가 두 줄인 타원" },
+            { q: "E-R 모델에서 개체 타입 간의 관계를 나타내는 기호는? (4장)", a: "마름모", h: "사각형은 개체, 이것은 관계" },
+            { q: "릴레이션에서 튜플을 유일하게 식별할 수 있는 최소한의 속성 집합은? (5장)", a: "후보키", h: "기본키가 될 수 있는 자격이 있는 키" },
+            { q: "기본키는 NULL 값을 가질 수 없다는 제약조건은? (5장)", a: "개체 무결성 제약조건", h: "Entity Integrity" },
+            { q: "외래키는 참조할 수 없는 값을 가질 수 없다는 제약조건은? (5장)", a: "참조 무결성 제약조건", h: "Referential Integrity" },
+            { q: "조건을 만족하는 튜플(행)만 선택하는 관계 대수 연산은? (6장)", a: "셀렉션", h: "Selection (기호는 시그마)" },
+            { q: "특정 속성(열)들만 추출하는 관계 대수 연산은? (6장)", a: "프로젝션", h: "Projection (기호는 파이)" },
+            { q: "두 릴레이션의 공통 속성을 기준으로 결합하는 연산은? (6장)", a: "조인", h: "Join" },
+            { q: "릴레이션의 튜플 수를 의미하는 용어는? (5장)", a: "카디널리티", h: "Cardinality" }
+        ];
+
+        const javaQuestions = [
+            { q: "다음 코드의 출력 결과는? (2장)", c: "int a = 10;\nint b = a++;\nSystem.out.println(a + b);", a: "21", h: "후위 연산자는 대입 후 증가합니다." },
+            { q: "빈칸에 들어갈 자료형은? (2장)", c: "double d = 10.5;\nint n = ( 빈칸 )d;", a: "int", h: "강제 형변환(Casting) 키워드" },
+            { q: "반복문의 실행 횟수는? (3장)", c: "for(int i=0; i<10; i+=2) {\n  System.out.println(i);\n}", a: "5", h: "0, 2, 4, 6, 8" },
+            { q: "객체 자신을 가리키는 키워드는? (4장)", c: "public class Person {\n  String name;\n  void setName(String name) {\n    ( 빈칸 ).name = name;\n  }\n}", a: "this", h: "매개변수와 필드를 구분할 때 사용" },
+            { q: "다음 연산의 결과는? (2장)", c: "int x = 10 % 3;\nSystem.out.println(x);", a: "1", h: "나머지 연산자" },
+            { q: "출력 결과는? (2장)", c: "int a = 5;\nSystem.out.println(++a * 2);", a: "12", h: "전위 연산자는 증가 후 계산합니다." },
+            { q: "객체를 생성할 때 사용하는 연산자는? (4장)", c: "Person p = ( 빈칸 ) Person();", a: "new", h: "메모리 할당 및 생성자 호출" },
+            { q: "결과값은? (3장)", c: "int s = 0;\nfor(int i=1; i<=3; i++) s += i;\nSystem.out.println(s);", a: "6", h: "1+2+3" },
+            { q: "클래스의 구성 요소 중 객체를 초기화하는 메서드와 유사한 것은? (4장)", a: "생성자", h: "클래스명과 이름이 동일합니다." },
+            { q: "this()를 사용하여 다른 생성자를 호출할 때, 반드시 지켜야 할 규칙은? (4장)", a: "첫줄", h: "생성자 몸체의 '이곳'에서만 호출 가능" }
+        ];
+
+        let currentSubject = "";
+        let currentIdx = 0;
+        let score = 0;
+        let quizPool = [];
+        let userAnswers = [];
+
+        function startQuiz(subject) {
+            currentSubject = subject;
+            currentIdx = 0;
+            score = 0;
+            userAnswers = [];
+            quizPool = subject === 'JAVA' ? [...javaQuestions] : [...dbQuestions];
+            quizPool = quizPool.sort(() => Math.random() - 0.5); // 랜덤 섞기
+
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            
+            document.getElementById('subject-tag').innerText = subject;
+            document.getElementById('subject-tag').className = subject === 'JAVA' ? 'px-3 py-1 bg-blue-500 rounded-full text-xs font-bold mr-2' : 'px-3 py-1 bg-indigo-500 rounded-full text-xs font-bold mr-2';
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = quizPool[currentIdx];
+            document.getElementById('progress-text').innerText = `${currentIdx + 1} / ${quizPool.length}`;
+            document.getElementById('q-text').innerText = q.q;
+            document.getElementById('hint-text').innerText = `힌트: ${q.h}`;
+            
+            const codeArea = document.getElementById('code-area');
+            if (q.c) {
+                codeArea.innerText = q.c;
+                codeArea.classList.remove('hidden');
+            } else {
+                codeArea.classList.add('hidden');
+            }
+
+            const input = document.getElementById('ans-input');
+            input.value = "";
+            input.focus();
+        }
+
+        function checkAnswer() {
+            const userAns = document.getElementById('ans-input').value.trim();
+            const correctAns = quizPool[currentIdx].a;
+            
+            const isCorrect = userAns.toLowerCase().replace(/\s/g, "") === correctAns.toLowerCase().replace(/\s/g, "");
+            if (isCorrect) score++;
+            
+            userAnswers.push({ user: userAns, correct: correctAns, isCorrect: isCorrect, q: quizPool[currentIdx].q });
+
+            if (currentIdx < quizPool.length - 1) {
+                currentIdx++;
+                showQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('score-display').innerText = score;
+
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = "";
+            
+            userAnswers.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-xl border-2 ${item.isCorrect ? 'border-green-100 bg-green-50' : 'border-red-100 bg-red-50'}`;
+                div.innerHTML = `
+                    <p class="font-bold text-slate-800 mb-1">${index + 1}. ${item.q}</p>
+                    <p class="text-sm">입력: <span class="${item.isCorrect ? 'text-green-600' : 'text-red-600'} font-bold">${item.user || "(미입력)"}</span> / 정답: <span class="font-bold text-blue-600">${item.correct}</span></p>
+                `;
+                reviewList.appendChild(div);
+            });
+        }
+
+        function exitQuiz() {
+            if(confirm("정말 종료하시겠습니까?")) location.reload();
+        }
+
+        document.getElementById('ans-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') checkAnswer();
+        });
+    </script>
+</body>
+</html>
